@@ -101,3 +101,5 @@
 
 ;(require racket/trace)
 ;(trace contradiction-in-branch?)
+
+(valid? 'a '((OR a (NOT a))))
