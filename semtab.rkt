@@ -37,7 +37,7 @@
                     ;OR
                     ((eq? (car head) 'OR) (list (semtab (cons (cadr head) rest)) (semtab (cons (caddr head) rest))))
                     ;NOT OR
-                    ((and (eq? (car head) 'NOT) (eq? (caadr head) 'OR)) (semtab (cons (list 'AND (cons 'NOT (cadadr head)) (list 'NOT (car (cddadr head)))) rest)))
+                    ((and (eq? (car head) 'NOT) (eq? (caadr head) 'OR)) (semtab (cons (list 'AND (list 'NOT (cadadr head)) (list 'NOT (car (cddadr head)))) rest)))
                     ;_______________________________
                     ;IFTHEN
                     ((eq? (car head) 'IFTHEN) (semtab (cons (list 'OR (list 'NOT  (cadr head)) (caddr head)) rest)))
@@ -90,7 +90,10 @@
           #f
           (not (satisfiable? ls))))
 
-(define (valid? ls) ls)
+(define (valid? phi F)
+        (cond 
+          ((null? F) #f)
+          (else (not (satisfiable? (append (not-list F) (list phi)))))))
 
 (define (models ls) ls)
 
@@ -98,5 +101,3 @@
 
 ;(require racket/trace)
 ;(trace contradiction-in-branch?)
-
-(contradiction? '(AND a (NOT a)))
