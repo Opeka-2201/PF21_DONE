@@ -1,0 +1,10 @@
+(let ((smt (semtab ls)))
+              (let* ((head (car smt)) (rest (cdr smt)))
+                (if (not (isDevelopped? smt)) 
+                  (or (satisfiable? (car smt) (satisfiable? (cdr smt))))
+                  (not (contradiction-in-branch? smt)))))))
+
+(define notted (lambda (ls) 
+                (cond (null? ls) ls
+                (append (list ('NOT (car ls) (notted cdr ls)) 
+                    
