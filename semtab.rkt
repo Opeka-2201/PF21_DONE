@@ -133,18 +133,22 @@
             (cond
               ((not (isDevelopped? branch)) (cons (branch-open? branch var_smt) (branch-open? next var_smt)))
               ((contradiction-in-branch? branch) (branch-open? next var_smt))
-              (else (cons (cons (compute-models branch var_smt) branch) (branch-open? next var_smt)))))))
+              (else (let ((computed (compute-models branch var_smt))) 
+                      (cond 
+                        ((null? computed) (cons branch (branch-open? next var_smt)))
+                        (else (cons (cons (compute-models branch var_smt) branch) (branch-open? next var_smt))))))))))
 
 (define (models ls)
         (cond
           ((not (satisfiable? ls)) (displayln "Pas de modèles disponibles, la formule n'est pas satisfaisable"))
-          (else (displayln (branch-open? (semtab ls) (var-in-list (semtab ls)))))))
+          (else (branch-open? (semtab ls) (var-in-list (semtab ls))))))
 
-(define (counterexamples ls) ls)
+(define (counterexamples f F)
+        (cond
+          ((valid? f F) (displayln "Pas de contre-exemples disponibles, f est valide sous F"))
+          (else F)))
 
-(require racket/trace)
+(define F '((OR a (NOT a))))
+(define f 'a)
 
-; (trace is-in-list?)
-; (trace compute-models)
-(semtab '((OR a (OR (AND (NOT b) b) c))))
-(models '((OR a (OR (AND (NOT b) b) c))))
+(counterexamples f F)
