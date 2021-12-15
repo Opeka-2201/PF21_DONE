@@ -17,8 +17,8 @@
               ((or (not (list? head)) (and (eq? (car head) 'NOT) (not (list? (cadar ls))))) (isDevelopped? rest))
               (else #f)))))
 
-(define (remove-duplicates loa)
-        (foldr (lambda (x y) (cons x (filter (lambda (z) (not (equal? x z))) y))) empty loa))
+(define (remove-duplicates ls)
+        (foldr (lambda (x y) (cons x (filter (lambda (z) (not (equal? x z))) y))) empty ls))
               
 (define (semtab ls)
         (if (null? ls) ls
@@ -103,6 +103,7 @@
 (define (var-in-branch ls)
         (cond
           ((null? ls) ls)
+          ((not (isDevelopped? ls)) (append (var-in-branch (car ls)) (var-in-branch (cdr ls))))
           ((atom? (car ls)) (append (list (car ls)) (var-in-branch (cdr ls))))
           (else (append (list (cadar ls)) (var-in-branch (cdr ls))))))
 
@@ -111,16 +112,16 @@
           ((null? ls) ls)
           (else (remove-duplicates (append (var-in-branch (car ls)) (var-in-list (cdr ls)))))))
 
-(define (compute-models br) br)
+(define (compute-models br) 'open_to_do)
 
 (define (branch-open? smt)
         (if (null? smt) 
           '()
-          (let)
-        (cond
-          ((not (isDevelopped? (car smt))) (cons (branch-open? (car smt)) (branch-open? (cdr smt))))
-          ((contradiction-in-branch? (car smt)) (branch-open? (cdr smt)))
-          (else (cons (compute-models (car smt)) (branch-open? (cdr smt)))))))
+          (let* ((branch (car smt)) (next (cdr smt)))
+            (cond
+              ((not (isDevelopped? branch)) (cons (branch-open? branch) (branch-open? next)))
+              ((contradiction-in-branch? branch) (branch-open? next))
+              (else (cons (compute-models branch) (branch-open? next)))))))
 
 (define (models ls)
         (cond
@@ -130,17 +131,3 @@
 (define (counterexamples ls) ls)
 
 (require racket/trace)
-; (trace semtab)
-; (trace satisfiable?)
-; (trace valid?)
-; (trace contradiction?)
-; (trace tautology?)
-; (trace contradiction-in-branch?)
-; (trace contr)
-; (trace not-list)
-; (trace isDevelopped?)
-; (trace atom?)
-; (trace var-in-list)
-(trace branch-open?)
-
-(models '((OR a (OR b c))))
