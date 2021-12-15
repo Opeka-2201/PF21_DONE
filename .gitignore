@@ -1,4 +1,9 @@
 .DS_Store
-*.pdf
-report/
-!report/report.pdf
+*.png
+*.aux
+*.fdb_matexmk
+*.fls
+*.log
+*.out
+*.synctex.dz
+*.toc
