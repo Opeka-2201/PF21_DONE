@@ -17,6 +17,9 @@
               ((or (not (list? head)) (and (eq? (car head) 'NOT) (not (list? (cadar ls))))) (isDevelopped? rest))
               (else #f)))))
 
+(define (remove-duplicates loa)
+        (foldr (lambda (x y) (cons x (filter (lambda (z) (not (equal? x z))) y))) empty loa))
+              
 (define (semtab ls)
         (if (null? ls) ls
             (let* ((head (car ls)) (rest (cdr ls)))
@@ -44,7 +47,7 @@
                     ;NOT IFTHEN
                     ((and (eq? (car head) 'NOT) (eq? (caadr head) 'IFTHEN)) (semtab (cons (list 'AND (cadadr head) (list 'NOT (car (cddadr head)))) rest)))
                     ;_______________________________
-                    (else (error "Error : unhandeld case"))))))
+                    (else ls)))))
 
 (define (not-list ls)
         (if (null? ls)
@@ -95,11 +98,41 @@
           ((null? F) #f)
           (else (not (satisfiable? (append (not-list F) (list phi)))))))
 
-(define (models ls) ls)
+(define (var-in-branch ls)
+        (cond
+          ((null? ls) ls)
+          ((atom? (car ls)) (append (list (car ls)) (var-in-branch (cdr ls))))
+          (else (append (list (cadar ls)) (var-in-branch (cdr ls))))))
+
+(define (var-in-list ls)
+        (cond
+          ((null? ls) ls)
+          (else (remove-duplicates (append (var-in-branch (car ls)) (var-in-list (cdr ls)))))))
+
+(define (compute-models smt)
+        (cond
+          ((null? smt) '())
+          ((contradiction-in-branch? (car smt)) (compute-models (cdr smt)))
+          (else (cons 'open_to_do (compute-models (cdr smt))))))
+
+(define (models ls)
+        (cond
+          ((not (satisfiable? ls)) (displayln "Pas de modèles disponibles, la formule n'est pas satisfaisable"))
+          (else (displayln (compute-models (semtab ls))))))
 
 (define (counterexamples ls) ls)
 
-;(require racket/trace)
-;(trace contradiction-in-branch?)
-
-(semtab '((OR a (NOT a))))
+; (require racket/trace)
+; (trace semtab)
+; (trace satisfiable?)
+; (trace valid?)
+; (trace contradiction?)
+; (trace tautology?)
+; (trace contradiction-in-branch?)
+; (trace contr)
+; (trace not-list)
+; (trace isDevelopped?)
+; (trace atom?)
+; (trace var-in-list)
+(semtab '((OR a (AND a (OR (NOT a) b)))))
+(models '((OR a (AND a (OR (NOT a) b)))))
