@@ -136,7 +136,7 @@
               (else (let ((computed (compute-models branch var_smt))) 
                       (cond 
                         ((null? computed) (cons branch (branch-open? next var_smt)))
-                        (else (cons (cons (compute-models branch var_smt) branch) (branch-open? next var_smt))))))))))
+                        (else (cons (append (compute-models branch var_smt) branch) (branch-open? next var_smt))))))))))
 
 (define (models ls)
         (cond
@@ -148,7 +148,5 @@
           ((valid? F phi) (displayln "Pas de contre-exemples disponibles, f est valide sous F"))
           (else F)))
 
-(define phi '((OR a (NOT a))))
-(define F 'a)
-
-(valid? F phi)
+(semtab '((OR a (AND b (OR (NOT b) (OR c d))))))
+(models '((OR a (AND b (OR (NOT b) (OR c d))))))
