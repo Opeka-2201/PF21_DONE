@@ -1,9 +1,10 @@
 .DS_Store
 *.png
 *.aux
-*.fdb_matexmk
+*.fdb_latexmk
 *.fls
 *.log
 *.out
-*.synctex.dz
+*.synctex.gz
 *.toc
+
