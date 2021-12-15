@@ -101,10 +101,10 @@
           #f
           (not (satisfiable? ls))))
 
-(define (valid? phi F)
+(define (valid? F phi)
         (cond 
           ((null? F) #f)
-          (else (not (satisfiable? (append (not-list F) (list phi)))))))
+          (else (not (satisfiable? (append (not-list phi) (list F)))))))
 
 (define (var-in-branch ls)
         (cond
@@ -143,12 +143,12 @@
           ((not (satisfiable? ls)) (displayln "Pas de modèles disponibles, la formule n'est pas satisfaisable"))
           (else (branch-open? (semtab ls) (var-in-list (semtab ls))))))
 
-(define (counterexamples f F)
+(define (counterexamples F phi)
         (cond
-          ((valid? f F) (displayln "Pas de contre-exemples disponibles, f est valide sous F"))
+          ((valid? F phi) (displayln "Pas de contre-exemples disponibles, f est valide sous F"))
           (else F)))
 
-(define F '((OR a (NOT a))))
-(define f 'a)
+(define phi '((OR a (NOT a))))
+(define F 'a)
 
-(counterexamples f F)
+(valid? F phi)
