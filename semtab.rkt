@@ -69,10 +69,12 @@
 (define (contradiction-in-branch? ls)
         (if (null? ls)
           #f
-          (let* ((head (car ls)) (rest (cdr ls)))
-            (cond
-              ((atom? head) (or (contr head (cdr ls)) (contradiction-in-branch? rest)))
-              (else (or (contr (cadr head) (semtab (not-list (cdr ls)))) (contradiction-in-branch? rest)))))))
+          (if (not (isDevelopped? ls))
+            (or (contradiction-in-branch? (car ls)) (contradiction-in-branch? (cdr ls)))
+            (let* ((head (car ls)) (rest (cdr ls)))
+              (cond
+                ((atom? head) (or (contr head (cdr ls)) (contradiction-in-branch? rest)))
+                (else (or (contr (cadr head) (semtab (not-list (cdr ls)))) (contradiction-in-branch? rest))))))))
 
 (define (satisfiable? ls)
         (let ((smt (semtab ls)))
@@ -109,20 +111,25 @@
           ((null? ls) ls)
           (else (remove-duplicates (append (var-in-branch (car ls)) (var-in-list (cdr ls)))))))
 
-(define (compute-models smt)
+(define (compute-models br) br)
+
+(define (branch-open? smt)
+        (if (null? smt) 
+          '()
+          (let)
         (cond
-          ((null? smt) '())
-          ((contradiction-in-branch? (car smt)) (compute-models (cdr smt)))
-          (else (cons 'open_to_do (compute-models (cdr smt))))))
+          ((not (isDevelopped? (car smt))) (cons (branch-open? (car smt)) (branch-open? (cdr smt))))
+          ((contradiction-in-branch? (car smt)) (branch-open? (cdr smt)))
+          (else (cons (compute-models (car smt)) (branch-open? (cdr smt)))))))
 
 (define (models ls)
         (cond
           ((not (satisfiable? ls)) (displayln "Pas de modèles disponibles, la formule n'est pas satisfaisable"))
-          (else (displayln (compute-models (semtab ls))))))
+          (else (displayln (branch-open? (semtab ls))))))
 
 (define (counterexamples ls) ls)
 
-; (require racket/trace)
+(require racket/trace)
 ; (trace semtab)
 ; (trace satisfiable?)
 ; (trace valid?)
@@ -134,5 +141,6 @@
 ; (trace isDevelopped?)
 ; (trace atom?)
 ; (trace var-in-list)
-(semtab '((OR a (AND a (OR (NOT a) b)))))
-(models '((OR a (AND a (OR (NOT a) b)))))
+(trace branch-open?)
+
+(models '((OR a (OR b c))))
