@@ -1,3 +1,4 @@
 .DS_Store
 *.pdf
-!report.pdf
+report/
+!report/report.pdf
