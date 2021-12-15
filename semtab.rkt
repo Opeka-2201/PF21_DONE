@@ -17,6 +17,12 @@
               ((or (not (list? head)) (and (eq? (car head) 'NOT) (not (list? (cadar ls))))) (isDevelopped? rest))
               (else #f)))))
 
+(define (is-in-list? list x)
+        (cond 
+          ((null? list) #f)
+          ((equal? (car list) x) #t)
+          (else (is-in-list? (cdr list) x))))
+
 (define (remove-duplicates ls)
         (foldr (lambda (x y) (cons x (filter (lambda (z) (not (equal? x z))) y))) empty ls))
               
@@ -112,22 +118,33 @@
           ((null? ls) ls)
           (else (remove-duplicates (append (var-in-branch (car ls)) (var-in-list (cdr ls)))))))
 
-(define (compute-models br) 'open_to_do)
+(define (compute-models br var_smt)
+        (if (null? var_smt) 
+          '()
+          (let* ((var_br (var-in-branch br)) (var (car var_smt)) (rest (cdr var_smt)))
+            (cond
+              ((not (is-in-list? var_br var)) (cons (cons '~ (list var)) (compute-models br rest)))
+              (else (compute-models br rest))))))
 
-(define (branch-open? smt)
+(define (branch-open? smt var_smt)
         (if (null? smt) 
           '()
           (let* ((branch (car smt)) (next (cdr smt)))
             (cond
-              ((not (isDevelopped? branch)) (cons (branch-open? branch) (branch-open? next)))
-              ((contradiction-in-branch? branch) (branch-open? next))
-              (else (cons (compute-models branch) (branch-open? next)))))))
+              ((not (isDevelopped? branch)) (cons (branch-open? branch var_smt) (branch-open? next var_smt)))
+              ((contradiction-in-branch? branch) (branch-open? next var_smt))
+              (else (cons (cons (compute-models branch var_smt) branch) (branch-open? next var_smt)))))))
 
 (define (models ls)
         (cond
           ((not (satisfiable? ls)) (displayln "Pas de modèles disponibles, la formule n'est pas satisfaisable"))
-          (else (displayln (branch-open? (semtab ls))))))
+          (else (displayln (branch-open? (semtab ls) (var-in-list (semtab ls)))))))
 
 (define (counterexamples ls) ls)
 
 (require racket/trace)
+
+; (trace is-in-list?)
+; (trace compute-models)
+(semtab '((OR a (OR (AND (NOT b) b) c))))
+(models '((OR a (OR (AND (NOT b) b) c))))
