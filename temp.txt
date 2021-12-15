@@ -1,4 +1,0 @@
-5) Si oui, passer sur chaque branche et voir si il elle est ouverte
-6) Regarder si elle contient toutes les variables
-7) Si elle contient toutes les variables -> 1 seul modèle, la branche
-8) Si il manque des varibles 2^nbre manquant de variables modèles
