@@ -27,6 +27,10 @@
 (define (remove-duplicates ls)
         (foldr (lambda (x y) (cons x (filter (lambda (z) (not (equal? x z))) y))) empty ls))
               
+
+
+
+
 (define (semtab ls)
         (cond 
           ((null? ls) '())
@@ -57,6 +61,10 @@
                     ((and (eq? (car head) 'NOT) (eq? (caadr head) 'IFTHEN)) (semtab (cons (list 'AND (cadadr head) (list 'NOT (car (cddadr head)))) rest)))
                     ;_______________________________
                     (else ls))))))
+
+
+
+
 
 (define (not-list ls)
         (if (null? ls)
@@ -94,17 +102,30 @@
                                   (else (or (loop (car h)) (loop (cdr h))))))))
                   (loop smt))))
 
+
+
+
+
+
 (define (tautology? ls)
         (cond
           ((null? ls) #t)
           ((not (list? ls)) (tautology? (list ls)))
           (else (not (satisfiable? (not-list ls))))))
 
+
+
+
+
 (define (contradiction? ls)
         (cond
           ((null? ls) #f)
           ((not (list? ls)) (contradiction? (list ls)))
           (else (not (satisfiable? ls)))))
+
+
+
+
 
 (define (var-in-branch ls)
         (cond
@@ -146,13 +167,28 @@
           ((not (satisfiable? ls)) (displayln "Pas de modèles disponibles, la formule n'est pas satisfaisable"))
           (else (branch-open? (semtab ls) (var-in-list (semtab ls))))))
 
+
+
+
+
+
+
+
 (define (isFullyExpanded? mod)
         (not (and (list? (car mod)) (eq? '~ (caar mod)))))
 
 (define (expand mod)
         (cond
-          ((or (null? mod) (null? ))'())
-          ((isFullyExpanded? mod) '())))
+          ((null? mod) '())
+          ((not (list? (car mod))) mod)
+          ((isFullyExpanded? (car mod)) mod)
+          (else (let* ((branch (car mod)) (rest (cdr mod)) (tilde_var (cadar branch)))
+                  (append (append (expand (list (append (cdr branch)
+                                                (list tilde_var))))
+                                (expand (list (append (cdr branch) 
+                                                      (list (cons 'NOT 
+                                                            (list tilde_var)))))))
+                          (expand rest))))))
 
 (define (compare-models hyps form)
         (cond
@@ -163,14 +199,8 @@
         (let* ((models_form (models form)) (models_hyps (models hyps)))
           (compare-models (expand models_hyps) (expand models_form))))
 
-
-(require racket/trace)
-
-(trace expand)
-(trace isFullyExpanded?)
-
 (define test '((OR c (AND a (NOT b)))))
 
-
-
-; (expand mod)
+(models test)
+(displayln "")
+(expand (models test))
