@@ -17,18 +17,21 @@
               ((or (not (list? head)) (and (eq? (car head) 'NOT) (not (list? (cadar ls)))) (and (eq? (car head) '~) (not (list? (cadar ls))))) (isDevelopped? rest))
               (else #f)))))
 
-(define (is-in-list? list x)
+(define (is-in-list? ls x)
         (cond 
-          ((null? list) #f)
-          ((equal? (car list) x) #t)
-          (else (is-in-list? (cdr list) x))))
+          ((null? ls) #f)
+          ((not (list? ls)) (is-in-list? (list ls) x))
+          ((equal? (car ls) x) #t)
+          (else (is-in-list? (cdr ls) x))))
 
 (define (remove-duplicates ls)
         (foldr (lambda (x y) (cons x (filter (lambda (z) (not (equal? x z))) y))) empty ls))
               
 (define (semtab ls)
-        (if (null? ls) ls
-            (let* ((head (car ls)) (rest (cdr ls)))
+        (cond 
+          ((null? ls) '())
+          ((not (list? ls)) (semtab (list ls)))
+          (else (let* ((head (car ls)) (rest (cdr ls)))
                   (cond
                     ((isDevelopped? ls) ls)
                     ;_______________________________
@@ -53,7 +56,7 @@
                     ;NOT IFTHEN
                     ((and (eq? (car head) 'NOT) (eq? (caadr head) 'IFTHEN)) (semtab (cons (list 'AND (cadadr head) (list 'NOT (car (cddadr head)))) rest)))
                     ;_______________________________
-                    (else ls)))))
+                    (else ls))))))
 
 (define (not-list ls)
         (if (null? ls)
@@ -92,14 +95,16 @@
                   (loop smt))))
 
 (define (tautology? ls)
-        (if (null? ls) 
-          #t
-          (not (satisfiable? (not-list ls)))))
+        (cond
+          ((null? ls) #t)
+          ((not (list? ls)) (tautology? (list ls)))
+          (else (not (satisfiable? (not-list ls))))))
 
 (define (contradiction? ls)
-        (if (null? ls)
-          #f
-          (not (satisfiable? ls))))
+        (cond
+          ((null? ls) #f)
+          ((not (list? ls)) (contradiction? (list ls)))
+          (else (not (satisfiable? ls)))))
 
 (define (var-in-branch ls)
         (cond
@@ -128,7 +133,7 @@
           ((not (list? (car smt))) (branch-open? (list smt) var_smt))
           (else (let* ((branch (car smt)) (next (cdr smt)))
             (cond
-              ((not (isDevelopped? branch)) (cons (branch-open? branch var_smt) (branch-open? next var_smt)))
+              ((not (isDevelopped? branch)) (append (branch-open? branch var_smt) (branch-open? next var_smt)))
               ((contradiction-in-branch? branch) (branch-open? next var_smt))
               (else (let ((computed (compute-models branch var_smt))) 
                       (cond 
@@ -137,34 +142,35 @@
 
 (define (models ls)
         (cond
+          ((not (list? ls)) (models (list ls)))
           ((not (satisfiable? ls)) (displayln "Pas de modèles disponibles, la formule n'est pas satisfaisable"))
           (else (branch-open? (semtab ls) (var-in-list (semtab ls))))))
 
-(define (valid? F phi)
-        (cond 
-          ((null? F) (not (satisfiable? (not-list phi))))
-          (else (not (satisfiable? (list (append '(AND) (cons F (not-list phi)))))))))
+(define (isFullyExpanded? mod)
+        (not (and (list? (car mod)) (eq? '~ (caar mod)))))
 
-(define (compute-counter merged)
-        (if (contradiction-in-branch? merged)
-          merged
-          '/))
-
-(define (expand-models ls F)
-        (cond 
-          ((null? ls) '())
-          ((not (list? (car ls))) (cons (compute-counter (append ls F)) (expand-models (cdr ls) F))) ; branch just contains one model
-          (else (let* ((branch (car ls)) (next (cdr ls)))
-                        (cond 
-                          ((null? branch) '())
-                          ((not (list? (car branch))) (cons (compute-counter (append branch F)) (expand-models next F))) ; branch just contains one model
-                          (else (let ((var (cadar branch)))
-                            (cons (expand-models (append (cdr branch) (list var)) F) ; model where var is true
-                                  (expand-models (cons (cdr branch) (append '(NOT) (list var))) F))))))))) ; model where var is false
-
-(define (counterexamples F phi)
+(define (expand mod)
         (cond
-          ((valid? F phi) (displayln "Pas de contre-exemples disponibles, f est valide sous F"))
-          ((and (list? F) (= 2 (length F)) (eq? (car F) 'NOT)) (expand-models (models phi) (list F))) ; slmt NOT
-          ((list? F) (expand-models (models phi) F))
-          (else (expand-models (models phi) (list F)))))
+          ((or (null? mod) (null? ))'())
+          ((isFullyExpanded? mod) '())))
+
+(define (compare-models hyps form)
+        (cond
+          ((null? hyps) #t)
+          (else (and (is-in-list? form (car hyps)) (compare-models (cdr hyps) form)))))
+
+(define (valid? form hyps)
+        (let* ((models_form (models form)) (models_hyps (models hyps)))
+          (compare-models (expand models_hyps) (expand models_form))))
+
+
+(require racket/trace)
+
+(trace expand)
+(trace isFullyExpanded?)
+
+(define test '((OR c (AND a (NOT b)))))
+
+
+
+; (expand mod)

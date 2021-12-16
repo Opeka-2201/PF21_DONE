@@ -1,0 +1,37 @@
+#lang racket
+
+(define (compute-counter merged)
+        (if (contradiction-in-branch? merged)
+          merged
+          '/))
+
+(define (expand-models ls F)
+        (cond 
+          ((null? ls) '())
+          ((not (list? (car ls))) (cons (compute-counter (append ls F)) (expand-models (cdr ls) F))) ; branch just contains one model
+          (else (let* ((branch (car ls)) (next (cdr ls)))
+                        (cond 
+                          ((null? branch) '())
+                          ((not (list? (car branch))) (cons (compute-counter (append branch F)) (expand-models next F))) ; branch just contains one model
+                          (else (let ((var (cadar branch)))
+                            (cons (expand-models (append (cdr branch) (list var)) F) ; model where var is true
+                                  (expand-models (cons (cdr branch) (append '(NOT) (list var))) F))))))))) ; model where var is false
+
+(define (counterexamples F phi)
+        (cond
+          ((valid? F phi) (displayln "Pas de contre-exemples disponibles, f est valide sous F"))
+          ((and (list? F) (= 2 (length F)) (eq? (car F) 'NOT)) (expand-models (models phi) (list F))) ; slmt NOT
+          ((list? F) (expand-models (models phi) F))
+          (else (expand-models (models phi) (list F)))))
+
+(define (expand mod)
+        (cond
+          ((null? mod) '())
+          ((not (list? (car mod))) mod)
+          (else (let* ((branch (car mod)) (next (cdr mod)))
+                  (cond
+                    ((null? branch) '())
+                    ((isFullyExpanded? branch) (cons branch (expand next)))
+                    (else (let ((tilde_var (cadar branch)))
+                            (cons (expand (append (cdr branch) (list tilde_var)))
+                                  (list (expand (append (cdr branch) (list (append '(NOT) (list tilde_var))))))))))))))
