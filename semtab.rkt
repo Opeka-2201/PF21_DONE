@@ -62,10 +62,6 @@
                     ;_______________________________
                     (else ls))))))
 
-
-
-
-
 (define (not-list ls)
         (if (null? ls)
           ls
@@ -102,30 +98,17 @@
                                   (else (or (loop (car h)) (loop (cdr h))))))))
                   (loop smt))))
 
-
-
-
-
-
 (define (tautology? ls)
         (cond
           ((null? ls) #t)
           ((not (list? ls)) (tautology? (list ls)))
           (else (not (satisfiable? (not-list ls))))))
 
-
-
-
-
 (define (contradiction? ls)
         (cond
           ((null? ls) #f)
           ((not (list? ls)) (contradiction? (list ls)))
           (else (not (satisfiable? ls)))))
-
-
-
-
 
 (define (var-in-branch ls)
         (cond
@@ -167,13 +150,6 @@
           ((not (satisfiable? ls)) (displayln "Pas de modèles disponibles, la formule n'est pas satisfaisable"))
           (else (branch-open? (semtab ls) (var-in-list (semtab ls))))))
 
-
-
-
-
-
-
-
 (define (isFullyExpanded? mod)
         (not (and (list? (car mod)) (eq? '~ (caar mod)))))
 
@@ -198,9 +174,3 @@
 (define (valid? form hyps)
         (let* ((models_form (models form)) (models_hyps (models hyps)))
           (compare-models (expand models_hyps) (expand models_form))))
-
-(define test '((OR c (AND a (NOT b)))))
-
-(models test)
-(displayln "")
-(expand (models test))
