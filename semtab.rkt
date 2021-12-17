@@ -149,7 +149,7 @@
 (define (isFullyExpanded? mod)
         (not (and (list? (car mod)) (eq? '~ (caar mod)))))
 
-(define (expand mod)
+(define (expand-models mod)
         (cond
           ((null? mod) '())
           ((not (list? (car mod))) mod)
@@ -161,6 +161,12 @@
                                                       (list (cons 'NOT 
                                                             (list tilde_var)))))))
                           (expand rest))))))
+
+(define (remove-dup-models expanded)
+        expanded)
+
+(define (expand mod)
+        (remove-dup-models (expand-models mod)))
 
 (define (check-model merged)
         (is-in-list? (map contradiction-in-branch? merged) #f))
