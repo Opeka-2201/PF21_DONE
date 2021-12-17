@@ -194,8 +194,11 @@
 (define test_form '((AND a (OR b (NOT c)))))
 (define test_hyps '((OR (NOT a) (AND (NOT b) c))))
 
+(display "\nModèles de la formule : ")
 (expand (models test_form))
+(display "\nModèles des hypothèses : ")
 (expand (models test_hyps))
-
+(display "\nFormule valide sous hypothèses : ")
 (valid? test_form test_hyps)
+(display "\nContre-exemples")
 (counterexamples test_form test_hyps)
