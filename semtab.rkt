@@ -27,10 +27,6 @@
 (define (remove-duplicates ls)
         (foldr (lambda (x y) (cons x (filter (lambda (z) (not (equal? x z))) y))) empty ls))
               
-
-
-
-
 (define (semtab ls)
         (cond 
           ((null? ls) '())
@@ -166,11 +162,40 @@
                                                             (list tilde_var)))))))
                           (expand rest))))))
 
+(define (check-model merged)
+        (is-in-list? (map contradiction-in-branch? merged) #f))
+
+(define (merge hyp form)
+        (cond
+          ((null? form) '())
+          (else (cons (append hyp (car form)) (merge hyp (cdr form))))))
+
 (define (compare-models hyps form)
         (cond
           ((null? hyps) #t)
-          (else (and (is-in-list? form (car hyps)) (compare-models (cdr hyps) form)))))
+          (else (and (check-model (merge (car hyps) form)) (compare-models (cdr hyps) form)))))
 
 (define (valid? form hyps)
         (let* ((models_form (models form)) (models_hyps (models hyps)))
           (compare-models (expand models_hyps) (expand models_form))))
+
+(define (compute-counter hyps form)
+        (cond
+          ((null? hyps) '())
+          ((check-model (merge (car hyps) form)) (append '() (compute-counter (cdr hyps) form)))
+          (else (cons (car hyps) (compute-counter (cdr hyps) form)))))
+
+(define (counterexamples form hyps)
+        (cond 
+          ((valid? form hyps) (displayln "Pas de contre-exemples disponibles, formule valide sous hypothèse(s)"))
+          (else (let* ((models_form (expand (models form))) (models_hyps (expand (models hyps))))
+                  (compute-counter models_hyps models_form)))))
+
+(define test_form '((AND a (OR b (NOT c)))))
+(define test_hyps '((OR (NOT a) (AND (NOT b) c))))
+
+(expand (models test_form))
+(expand (models test_hyps))
+
+(valid? test_form test_hyps)
+(counterexamples test_form test_hyps)
