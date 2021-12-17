@@ -200,5 +200,6 @@
 (expand (models test_hyps))
 (display "\nFormule valide sous hypothèses : ")
 (valid? test_form test_hyps)
-(display "\nContre-exemples")
+(display "\nContre-exemples : ")
 (counterexamples test_form test_hyps)
+(displayln "")
