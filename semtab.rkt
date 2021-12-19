@@ -149,24 +149,43 @@
 (define (isFullyExpanded? mod)
         (not (and (list? (car mod)) (eq? '~ (caar mod)))))
 
-(define (expand-models mod)
+(define (expands-models mod)
         (cond
           ((null? mod) '())
           ((not (list? (car mod))) mod)
           ((isFullyExpanded? (car mod)) mod)
           (else (let* ((branch (car mod)) (rest (cdr mod)) (tilde_var (cadar branch)))
-                  (append (append (expand (list (append (cdr branch)
+                  (append (append (expands-models (list (append (cdr branch)
                                                 (list tilde_var))))
-                                (expand (list (append (cdr branch) 
+                                  (expands-models (list (append (cdr branch) 
                                                       (list (cons 'NOT 
                                                             (list tilde_var)))))))
-                          (expand rest))))))
+                          (expands-models rest))))))
+
+(define (same-model? branch1 branch2)
+        (let ((branch (append branch1 branch2)))
+              (if (contradiction-in-branch? branch)
+                  #f
+                  #t)))
+
+(define (twice-same-model-in-branch? branch rest)
+        (cond 
+          ((null? rest) #f)
+          (else (let ((to_compare (car rest)))
+                  (if (same-model? branch to_compare)
+                      #t
+                      (twice-same-model-in-branch? branch (cdr rest)))))))
 
 (define (remove-dup-models expanded)
-        expanded)
+        (cond
+          ((null? expanded) '())
+          (else (let* ((branch (car expanded)) (rest (cdr expanded)))
+                  (if (twice-same-model-in-branch? branch rest)
+                    (append '() (remove-dup-models rest))
+                    (cons branch (remove-dup-models rest)))))))
 
-(define (expand mod)
-        (remove-dup-models (expand-models mod)))
+(define (expands mod)
+        (remove-dup-models (expands-models mod)))
 
 (define (check-model merged)
         (is-in-list? (map contradiction-in-branch? merged) #f))
@@ -183,7 +202,7 @@
 
 (define (valid? form hyps)
         (let* ((models_form (models form)) (models_hyps (models hyps)))
-          (compare-models (expand models_hyps) (expand models_form))))
+          (compare-models (expands models_hyps) (expands models_form))))
 
 (define (compute-counter hyps form)
         (cond
@@ -194,7 +213,7 @@
 (define (counterexamples form hyps)
         (cond 
           ((valid? form hyps) (displayln "Pas de contre-exemples disponibles, formule valide sous hypothèse(s)"))
-          (else (let* ((models_form (expand (models form))) (models_hyps (expand (models hyps))))
+          (else (let* ((models_form (expands (models form))) (models_hyps (expands (models hyps))))
                   (compute-counter models_hyps models_form)))))
 
 (define test_form1 '((OR a (AND b (NOT c)))))
@@ -205,9 +224,9 @@ test_form1
 (display "\nHypothèses : ")
 test_hyps1
 (display "\nModèles de la formule : ")
-(expand (models test_form1))
+(expands (models test_form1))
 (display "\nModèles des hypothèses : ")
-(expand (models test_hyps1))
+(expands (models test_hyps1))
 (display "\nFormule valide sous hypothèses : ")
 (valid? test_form1 test_hyps1)
 (display "\nContre-exemples : ")
@@ -222,9 +241,9 @@ test_form2
 (display "\nHypothèses : ")
 test_hyps2
 (display "\nModèles de la formule : ")
-(expand (models test_form2))
+(expands (models test_form2))
 (display "\nModèles des hypothèses : ")
-(expand (models test_hyps2))
+(expands (models test_hyps2))
 (display "\nFormule valide sous hypothèses : ")
 (valid? test_form2 test_hyps2)
 (display "\nContre-exemples : ")
