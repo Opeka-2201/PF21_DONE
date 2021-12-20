@@ -143,7 +143,7 @@
 (define (models ls)
         (cond
           ((not (list? ls)) (models (list ls)))
-          ((not (satisfiable? ls)) (displayln "Pas de modèles disponibles, la formule n'est pas satisfaisable"))
+          ((not (satisfiable? ls)) (displayln "Pas de modèles disponibles, la formule n'est pas satisfaisante"))
           (else (branch-open? (semtab ls) (var-in-list (semtab ls))))))
 
 (define (isFullyExpanded? mod)
