@@ -5,6 +5,10 @@
 
 #lang racket
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Fonctions auxiliaires ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (define (atom? x)
         (and (not (null? x))
               (not (pair? x))))
@@ -27,6 +31,12 @@
 (define (remove-duplicates ls)
         (foldr (lambda (x y) (cons x (filter (lambda (z) (not (equal? x z))) y))) empty ls))
               
+              
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Implémentation de semtab ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
 (define (semtab ls)
         (cond 
           ((null? ls) '())
@@ -215,37 +225,3 @@
           ((valid? form hyps) (displayln "Pas de contre-exemples disponibles, formule valide sous hypothèse(s)"))
           (else (let* ((models_form (expands (models form))) (models_hyps (expands (models hyps))))
                   (compute-counter models_hyps models_form)))))
-
-(define test_form1 '((OR a (AND b (NOT c)))))
-(define test_hyps1 '((AND (NOT a) (OR b c))))
-
-(display "\nFormule : ")
-test_form1
-(display "\nHypothèses : ")
-test_hyps1
-(display "\nModèles de la formule : ")
-(expands (models test_form1))
-(display "\nModèles des hypothèses : ")
-(expands (models test_hyps1))
-(display "\nFormule valide sous hypothèses : ")
-(valid? test_form1 test_hyps1)
-(display "\nContre-exemples : ")
-(counterexamples test_form1 test_hyps1)
-(displayln "")
-
-(define test_form2 '((OR a (AND b (NOT c)))))
-(define test_hyps2 '((AND a (OR b c))))
-
-(display "\nFormule : ")
-test_form2
-(display "\nHypothèses : ")
-test_hyps2
-(display "\nModèles de la formule : ")
-(expands (models test_form2))
-(display "\nModèles des hypothèses : ")
-(expands (models test_hyps2))
-(display "\nFormule valide sous hypothèses : ")
-(valid? test_form2 test_hyps2)
-(display "\nContre-exemples : ")
-(counterexamples test_form2 test_hyps2)
-(displayln "")
